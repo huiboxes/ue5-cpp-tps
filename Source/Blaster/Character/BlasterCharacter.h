@@ -19,6 +19,12 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+	void Turn(float Value);
+	void LookUp(float Value);
+
+
 private:
 	// 将它归类为相机
 	UPROPERTY(VisibleAnywhere, Category = Camera)
