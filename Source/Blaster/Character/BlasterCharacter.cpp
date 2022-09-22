@@ -4,6 +4,7 @@
 #include "BlasterCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -26,6 +27,11 @@ ABlasterCharacter::ABlasterCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	// 因为它附加到 CameraBoom ，所以不需要启用 Pwan 控制
 	FollowCamera->bUsePawnControlRotation = false;
+
+	// 让角色独立于控制器旋转
+	bUseControllerRotationYaw = false;
+	// 角色向加速方向旋转，RotationRate作为旋转变化率
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 }
 
