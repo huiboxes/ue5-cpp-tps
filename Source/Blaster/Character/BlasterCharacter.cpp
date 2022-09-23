@@ -5,6 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -33,6 +34,10 @@ ABlasterCharacter::ABlasterCharacter()
 	// 角色向加速方向旋转，RotationRate作为旋转变化率
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
+	// 创建一个 OverheadWidget 实例对象
+	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
+	// 将它附加到角色中
+	OverheadWidget->SetupAttachment(RootComponent);
 }
 
 void ABlasterCharacter::BeginPlay()

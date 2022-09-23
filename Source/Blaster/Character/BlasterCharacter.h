@@ -33,7 +33,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* FollowCamera;
 
-public:	
+	// 加上 AllowPrivateAccess 后，就可以给私有变量设置 BlueprintReadOnly
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* OverheadWidget;
 	
 
 };
