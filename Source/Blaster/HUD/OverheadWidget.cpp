@@ -12,7 +12,7 @@ void UOverheadWidget::SetDisplayText(FString TextToDisplay) {
 }
 
 void UOverheadWidget::ShowPlayerNetRole(APawn* InPawn) {
-	ENetRole LocalRole = InPawn->GetLocalRole(); // 获得玩家的 Local Role，这个值会因为调用它的机器不同而得到不同的值。
+	ENetRole LocalRole = InPawn->GetRemoteRole();
 	FString Role;
 	switch (LocalRole) {
 	case ROLE_None:
