@@ -3,6 +3,8 @@
 
 #include "Weapon.h"
 #include "Components/SphereComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Blaster/Character/BlasterCharacter.h"
 
 AWeapon::AWeapon()
 {
@@ -11,8 +13,6 @@ AWeapon::AWeapon()
 
 	// 创建武器的 SkeletalMesh
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	// 附加到根组件
-	WeaponMesh->SetupAttachment(RootComponent);
 	// 设置根组件
 	SetRootComponent(WeaponMesh);
 	
@@ -31,16 +31,33 @@ AWeapon::AWeapon()
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	// 设置无碰撞
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// 服务器将负责所有武器对象
+	if (HasAuthority()) { // 如果拥有网络权限（在服务器上）
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // 启用碰撞检测
+		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap); // 对 Pawn 启用重叠检测
+
+		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
+	}
+
+	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
+	PickupWidget->SetupAttachment(RootComponent);
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (PickupWidget) {
+		PickupWidget->SetVisibility(false);
+	}
 	
-	// 服务器将负责所有武器对象
-	if (HasAuthority()) { // 如果拥有网络权限（在服务器上）
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // 启用碰撞检测
-		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap); // 对 Pawn 启用重叠检测
+}
+
+void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter && PickupWidget) {
+		PickupWidget->SetVisibility(true);
 	}
 }
 
