@@ -6,6 +6,8 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Blaster/Weapon/Weapon.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -40,10 +42,23 @@ ABlasterCharacter::ABlasterCharacter()
 	OverheadWidget->SetupAttachment(RootComponent);
 }
 
+void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// 注册要复制的重叠武器变量（只复制给与武器范围重叠的人物的客户端）
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	//DOREPLIFETIME(ABlasterCharacter, OverlappingWeapon);
+}
+
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ABlasterCharacter::Tick(float DeltaTime) {
+	Super::Tick(DeltaTime);
+
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
@@ -57,7 +72,6 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("MoveRight", this, &ThisClass::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &ThisClass::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ThisClass::LookUp);
-
 }
 
 void ABlasterCharacter::MoveForward(float Value) {
@@ -93,9 +107,26 @@ void ABlasterCharacter::LookUp(float Value) {
 	AddControllerPitchInput(Value);
 }
 
-void ABlasterCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon) {
+	if (OverlappingWeapon) {
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	OverlappingWeapon = Weapon;
+	if (IsLocallyControlled()) {
+		if (OverlappingWeapon) {
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
 
+
+// OverlappingWeapon 值发生变化时，会复制到客户端，同时调用这个函数
+void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon) {
+	if (OverlappingWeapon) {
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+	if (LastWeapon) {
+		LastWeapon->ShowPickupWidget(false);
+	}
 }
 

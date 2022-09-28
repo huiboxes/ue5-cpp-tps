@@ -32,14 +32,6 @@ AWeapon::AWeapon()
 	// 设置无碰撞
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// 服务器将负责所有武器对象
-	if (HasAuthority()) { // 如果拥有网络权限（在服务器上）
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // 启用碰撞检测
-		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap); // 对 Pawn 启用重叠检测
-
-		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
-	}
-
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(RootComponent);
 }
@@ -48,6 +40,15 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
+
+	// 服务器将负责所有武器对象
+	if (HasAuthority()) { // 如果拥有网络权限（在服务器上）
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // 启用碰撞检测
+		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap); // 对 Pawn 启用重叠检测
+
+		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
+		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnSphereEndOverlap);
+	}
 	if (PickupWidget) {
 		PickupWidget->SetVisibility(false);
 	}
@@ -56,14 +57,24 @@ void AWeapon::BeginPlay()
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-	if (BlasterCharacter && PickupWidget) {
-		PickupWidget->SetVisibility(true);
+	if (BlasterCharacter) {
+		// 如果重叠的物体是游戏中的人物，则将人物实例上的重叠武器设置为当前武器实例
+		// 这样就可以在人物类中控制 Weapon 的显示 / 隐藏
+		BlasterCharacter->SetOverlappingWeapon(this);
 	}
 }
 
-void AWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter) {
+		BlasterCharacter->SetOverlappingWeapon(nullptr);
+	}
+}
 
+
+void AWeapon::ShowPickupWidget(bool bShowWidget) {
+	if (PickupWidget) {
+		PickupWidget->SetVisibility(bShowWidget);
+	}
 }
 

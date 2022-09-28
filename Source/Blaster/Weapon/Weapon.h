@@ -19,26 +19,35 @@ enum class EWeaponState : uint8 {
 
 
 UCLASS()
-class BLASTER_API AWeapon : public AActor
-{
+class BLASTER_API AWeapon : public AActor {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AWeapon();
-	virtual void Tick(float DeltaTime) override;
+	// 设置是否显示拾取组件函数 
+	void ShowPickupWidget(bool bShowWidget);
 
 protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void OnSphereOverlap(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor, // 进入重叠区域的 Actor
-		UPrimitiveComponent* OtherComp, 
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult
-	);
+			UPrimitiveComponent* OverlappedComponent,
+			AActor* OtherActor, // 进入重叠区域的 Actor
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex,
+			bool bFromSweep,
+			const FHitResult& SweepResult
+		);
+
+	UFUNCTION()
+	void OnSphereEndOverlap(
+			UPrimitiveComponent* OverlappedComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex
+		);
+
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
@@ -49,11 +58,11 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
-	
+
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickupWidget;
 
-public:	
-	
+public:
+
 
 };
