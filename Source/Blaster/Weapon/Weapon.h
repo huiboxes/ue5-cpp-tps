@@ -26,15 +26,17 @@ public:
 	AWeapon();
 	// 设置是否显示拾取组件函数 
 	void ShowPickupWidget(bool bShowWidget);
+	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	virtual void OnSphereOverlap(
-			UPrimitiveComponent* OverlappedComponent,
+			UPrimitiveComponent* OverlappedComponent, // 重叠的组件
 			AActor* OtherActor, // 进入重叠区域的 Actor
-			UPrimitiveComponent* OtherComp,
+			UPrimitiveComponent* OtherComp, // 其它组件
 			int32 OtherBodyIndex,
 			bool bFromSweep,
 			const FHitResult& SweepResult
@@ -56,13 +58,16 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class USphereComponent* AreaSphere;
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
+
+	UFUNCTION()
+	void OnRep_WeaponState();
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickupWidget;
 
 public:
-
-
+	void SetWeaponState(EWeaponState State);
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; };
 };

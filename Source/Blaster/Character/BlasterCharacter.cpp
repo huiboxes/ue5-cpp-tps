@@ -8,9 +8,9 @@
 #include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 
-ABlasterCharacter::ABlasterCharacter()
-{
+ABlasterCharacter::ABlasterCharacter() {
 	PrimaryActorTick.bCanEverTick = true;
 
 	// 创建弹簧臂
@@ -40,6 +40,11 @@ ABlasterCharacter::ABlasterCharacter()
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	// 将它附加到角色中
 	OverheadWidget->SetupAttachment(RootComponent);
+	
+	// 组件设置为 Replicated ，不需要注册
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat->SetIsReplicated(true);
+
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
@@ -50,10 +55,17 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	//DOREPLIFETIME(ABlasterCharacter, OverlappingWeapon);
 }
 
-void ABlasterCharacter::BeginPlay()
-{
+// 组件初始化后将本类中 Combat 实例中绑定的 ABlasterCharacter 实例设置为当前实例
+void ABlasterCharacter::PostInitializeComponents() {
+	Super::PostInitializeComponents();
+	if (Combat) {
+		Combat->Character = this;
+	}
+}
+
+void ABlasterCharacter::BeginPlay() {
 	Super::BeginPlay();
-	
+
 }
 
 void ABlasterCharacter::Tick(float DeltaTime) {
@@ -63,9 +75,10 @@ void ABlasterCharacter::Tick(float DeltaTime) {
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
+
 	// 绑定父类的 Jump 方法
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ThisClass::EquipButtonPressed);
 
 	// 绑定当前类的方法
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
@@ -105,6 +118,25 @@ void ABlasterCharacter::Turn(float Value) {
 void ABlasterCharacter::LookUp(float Value) {
 	// 上下移动视角，传入 Y 轴偏移
 	AddControllerPitchInput(Value);
+}
+
+void ABlasterCharacter::EquipButtonPressed() {
+	// 装备武器应该由服务器负责
+	if (Combat) {
+		if (HasAuthority()) {
+			Combat->EquipWeapon(OverlappingWeapon);
+		} else { // 如果是
+			ServerEquipButtonPressed();
+		}
+	}
+
+}
+
+// 得在实现的函数名后加上 _Implementation ，UE 会帮忙创建它实际的函数定义的
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation() {
+	if (Combat) {
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon) {
