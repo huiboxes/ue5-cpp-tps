@@ -79,6 +79,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	// 绑定父类的 Jump 方法
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ThisClass::EquipButtonPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ThisClass::CrouchButtonPressed);
 
 	// 绑定当前类的方法
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
@@ -132,11 +133,17 @@ void ABlasterCharacter::EquipButtonPressed() {
 
 }
 
+
+
 // 得在实现的函数名后加上 _Implementation ，UE 会帮忙创建它实际的函数定义的
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation() {
 	if (Combat) {
 		Combat->EquipWeapon(OverlappingWeapon);
 	}
+}
+
+void ABlasterCharacter::CrouchButtonPressed() {
+	Crouch();
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon) {
@@ -151,7 +158,6 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon) {
 	}
 }
 
-
 // OverlappingWeapon 值发生变化时，会复制到客户端，同时调用这个函数
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon) {
 	if (OverlappingWeapon) {
@@ -160,5 +166,9 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon) {
 	if (LastWeapon) {
 		LastWeapon->ShowPickupWidget(false);
 	}
+}
+
+bool ABlasterCharacter::IsWeaponEquipped() {
+	return (Combat && Combat->EquippedWeapon);
 }
 

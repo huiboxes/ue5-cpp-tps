@@ -24,9 +24,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime) {
 	FVector Velocity = BlasterCharacter->GetVelocity();
 	Velocity.Z = 0.f; // 不需要 Z 的分量
 	Speed = Velocity.Size();
-	
 	bIsInAir = BlasterCharacter->GetCharacterMovement()->IsFalling(); // 如果正在落下，说明在空中
-
 	bIsAcceleration = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
+	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 
 }
