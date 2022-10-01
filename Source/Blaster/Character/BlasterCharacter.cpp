@@ -45,6 +45,8 @@ ABlasterCharacter::ABlasterCharacter() {
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
 
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
@@ -143,7 +145,12 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation() {
 }
 
 void ABlasterCharacter::CrouchButtonPressed() {
-	Crouch();
+	if (bIsCrouched) {
+		UnCrouch();
+	} else {
+		Crouch();
+	}
+	
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon) {
