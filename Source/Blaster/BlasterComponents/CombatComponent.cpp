@@ -19,6 +19,14 @@ void UCombatComponent::BeginPlay()
 	
 }
 
+void UCombatComponent::SetAiming(bool bIsAiming) {
+	bAiming = bIsAiming; // 本地先切换到瞄准状态
+	ServerSetAiming(bIsAiming); // 如果是客户端调用的，则从服务器再设置到瞄准
+}
+
+void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming) {
+	bAiming = bIsAiming;
+}
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -31,6 +39,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, bAiming);
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip) {

@@ -19,8 +19,14 @@ public:
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
+
 protected:
 	virtual void BeginPlay() override;
+
+	void SetAiming(bool bIsAiming);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bIsAiming);
 
 
 private:
@@ -29,6 +35,9 @@ private:
 	// 将它设为复制的，当它发生变化时，会复制给所有客户端
 	UPROPERTY(Replicated)
 	class AWeapon* EquippedWeapon;
+
+	UPROPERTY(Replicated)
+	bool bAiming;
 
 public:	
 	

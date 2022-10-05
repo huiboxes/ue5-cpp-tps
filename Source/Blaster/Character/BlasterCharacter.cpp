@@ -80,8 +80,11 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	// 绑定父类的 Jump 方法
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ThisClass::EquipButtonPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ThisClass::CrouchButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ThisClass::AimButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ThisClass::AimButtonReleased);
 
 	// 绑定当前类的方法
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
@@ -153,6 +156,18 @@ void ABlasterCharacter::CrouchButtonPressed() {
 	
 }
 
+void ABlasterCharacter::AimButtonPressed() {
+	if (Combat) {
+		Combat->SetAiming(true);
+	}
+}
+
+void ABlasterCharacter::AimButtonReleased() {
+	if (Combat) {
+		Combat->SetAiming(false);
+	}
+}
+
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon) {
 	if (OverlappingWeapon) {
 		OverlappingWeapon->ShowPickupWidget(false);
@@ -177,5 +192,9 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon) {
 
 bool ABlasterCharacter::IsWeaponEquipped() {
 	return (Combat && Combat->EquippedWeapon);
+}
+
+bool ABlasterCharacter::IsAiming() {
+	return (Combat && Combat->bAiming);
 }
 

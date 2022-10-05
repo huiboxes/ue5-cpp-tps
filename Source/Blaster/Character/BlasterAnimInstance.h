@@ -25,20 +25,30 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	class ABlasterCharacter* BlasterCharacter; // 存储角色的变量
 
+	// 速度值
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	float Speed; // 速度值
+	float Speed; 
 
+	// 是否在空中
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	bool bIsInAir; // 是否在空中
+	bool bIsInAir; 
 
+	// 是否是加速状态
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	bool bIsAcceleration; // 是否是加速状态
+	bool bIsAcceleration; 
+
+	// 是否装备了武器
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	bool bWeaponEquipped; 
+
+	// 是否蹲下了
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	bool bIsCrouched; 
+
+	// 是否在瞄准中
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	bool bAiming; 
+
 	
-	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	bool bWeaponEquipped; // 是否装备了武器
-	
-	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	bool bIsCrouched; // 是否蹲下了
-
 
 };
