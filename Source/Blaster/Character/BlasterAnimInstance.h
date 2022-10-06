@@ -49,6 +49,18 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	bool bAiming; 
 
-	
+	// 输入方向和相机方向的夹角对应的偏移量
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	float YawOffset;
 
+	// 表示倾斜程度
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	float Lean;
+
+	// 存储上一帧角色 Rotation
+	FRotator CharacterRotationLastFrame;
+	// 存储当前帧角色 Rotation
+	FRotator CharacterRotation;
+	// 存储当前帧旋转信息
+	FRotator DeltaRotation;
 };

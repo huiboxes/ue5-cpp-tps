@@ -28,12 +28,14 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
 
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
 
 private:
 	ABlasterCharacter* Character;
 
 	// 将它设为复制的，当它发生变化时，会复制给所有客户端
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	class AWeapon* EquippedWeapon;
 
 	UPROPERTY(Replicated)

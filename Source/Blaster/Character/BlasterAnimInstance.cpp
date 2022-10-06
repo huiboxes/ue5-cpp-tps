@@ -4,7 +4,7 @@
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
+#include "Kismet/KismetMathLibrary.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation() {
 	Super::NativeInitializeAnimation(); // 执行父类中原有逻辑
@@ -30,4 +30,26 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime) {
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	bAiming = BlasterCharacter->IsAiming();
 
+	// 基本瞄准旋转是一个全局旋度
+	// 如果直直的看着世界的 X 轴方向，它是 0 
+	// 右旋转时增加，左旋旋转时减少
+	// 旋转到 180° 时，继续旋转会变为 -180°，然后再递增
+	FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();
+	
+	// 获取运动的旋度。取一个方向向量，获取角色 X 方向的速度。
+	// 这个旋转和 AimRotation 是同步的，可以获取它们之间的 delta
+	// 按下 D 向右跑时，仍希望向左跑，就会有一个 offset
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());
+	// Offset Yaw for Strafing
+	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
+	// 插值使左右动作切换更流畅
+	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
+	YawOffset = DeltaRotation.Yaw;
+
+	CharacterRotationLastFrame = CharacterRotation;
+	CharacterRotation = BlasterCharacter->GetActorRotation();
+	const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);
+	const float Target = Delta.Yaw / DeltaTime;
+	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);
+	Lean = FMath::Clamp(Interp, -90.f, 90.f);
 }
