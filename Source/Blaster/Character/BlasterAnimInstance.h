@@ -41,6 +41,9 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	bool bWeaponEquipped; 
 
+	// 装备着的武器
+	class AWeapon* EquippedWeapon;
+
 	// 是否蹲下了
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	bool bIsCrouched; 
@@ -63,4 +66,16 @@ private:
 	FRotator CharacterRotation;
 	// 存储当前帧旋转信息
 	FRotator DeltaRotation;
+
+	// 驱动 AimOffset 的 Yaw
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	float AO_Yaw;
+	
+	// 驱动 AimOffset 的 Pitch
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	float AO_Pitch;
+
+	// 持枪时放置左手的位置
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	FTransform LeftHandTransform;
 };

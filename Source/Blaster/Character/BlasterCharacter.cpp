@@ -10,6 +10,7 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ABlasterCharacter::ABlasterCharacter() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -76,7 +77,7 @@ void ABlasterCharacter::BeginPlay() {
 
 void ABlasterCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-
+	AimOffset(DeltaTime);
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
@@ -172,6 +173,39 @@ void ABlasterCharacter::AimButtonReleased() {
 	}
 }
 
+void ABlasterCharacter::AimOffset(float DeltaTime) {
+	if (Combat && Combat->EquippedWeapon == nullptr) return;
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	float Speed = Velocity.Size();
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+
+
+	if (Speed == 0.f && !bIsInAir) { // 站立且没有跳起时
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		// 当前和起始瞄准旋转之间的差值
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+		AO_Yaw = DeltaAimRotation.Yaw;
+		// 鼠标水平旋转不改变角色朝向
+		bUseControllerRotationYaw = false;
+
+	}
+	if (Speed > 0.f || bIsInAir) { // 跑步或跳起时
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); // 存储 Yaw
+		AO_Yaw = 0.f;
+		// 鼠标水平旋转可以改变角色朝向
+		bUseControllerRotationYaw = true;
+	}
+
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	if (AO_Pitch > 90.f && !IsLocallyControlled()) {
+		// 将 [270, 360) 映射到 [-90, 0)
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon) {
 	if (OverlappingWeapon) {
 		OverlappingWeapon->ShowPickupWidget(false);
@@ -200,5 +234,10 @@ bool ABlasterCharacter::IsWeaponEquipped() {
 
 bool ABlasterCharacter::IsAiming() {
 	return (Combat && Combat->bAiming);
+}
+
+AWeapon* ABlasterCharacter::GetEquippedWeapon() {
+	if (Combat == nullptr) return nullptr;
+	return Combat->EquippedWeapon;
 }
 

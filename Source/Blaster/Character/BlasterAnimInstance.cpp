@@ -5,6 +5,7 @@
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/Weapon/Weapon.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation() {
 	Super::NativeInitializeAnimation(); // 执行父类中原有逻辑
@@ -27,6 +28,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime) {
 	bIsInAir = BlasterCharacter->GetCharacterMovement()->IsFalling(); // 如果正在落下，说明在空中
 	bIsAcceleration = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
+	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	bAiming = BlasterCharacter->IsAiming();
 
@@ -52,4 +54,18 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime) {
 	const float Target = Delta.Yaw / DeltaTime;
 	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);
+
+	AO_Yaw = BlasterCharacter->GetAO_Yaw();
+	AO_Pitch = BlasterCharacter->GetAO_Pitch();
+
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh()) {
+		// 获取左手插槽的变换信息
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
+		FVector OutPosition; // 存储输出的位置信息
+		FRotator OutRotation; // 存储输出的旋转信息
+		// 将 hand_r 的世界变换信息转换为骨骼的相对位置（相对与左手插槽）
+		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		LeftHandTransform.SetLocation(OutPosition); // 设置左手插槽相对与右手的位置
+		LeftHandTransform.SetRotation(FQuat(OutRotation)); // 设置左手插槽相对于右手的旋转
+	}
 }

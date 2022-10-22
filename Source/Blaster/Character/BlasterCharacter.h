@@ -31,6 +31,7 @@ protected:
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void AimOffset(float DeltaTime);
 
 private:
 	// 将它归类为相机
@@ -60,9 +61,16 @@ private:
 	UFUNCTION(Server, Reliable) // 声明一个在客户端上调用，但需要在服务器上执行的可靠 RPC
 	void ServerEquipButtonPressed();
 
+	float AO_Yaw;
+	float AO_Pitch;
+	FRotator StartingAimRotation;
+
 public:
 
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
 	bool IsAiming();
+	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; };
+	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; };
+	AWeapon* GetEquippedWeapon();
 };
