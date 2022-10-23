@@ -41,7 +41,7 @@ ABlasterCharacter::ABlasterCharacter() {
 	// 创建一个 OverheadWidget 实例对象
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	// 将它附加到角色中
-	OverheadWidget->SetupAttachment(RootComponent);
+	 OverheadWidget->SetupAttachment(RootComponent);
 	
 	// 组件设置为 Replicated ，不需要注册
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
@@ -52,6 +52,9 @@ ABlasterCharacter::ABlasterCharacter() {
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	// 设置网格体忽略摄像机的碰撞
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	TurnningInPlace = ETurnningInPlace::ETIP_NotTurnning;
+
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
@@ -188,13 +191,14 @@ void ABlasterCharacter::AimOffset(float DeltaTime) {
 		AO_Yaw = DeltaAimRotation.Yaw;
 		// 鼠标水平旋转不改变角色朝向
 		bUseControllerRotationYaw = false;
-
+		TurnInPlace(DeltaTime);
 	}
 	if (Speed > 0.f || bIsInAir) { // 跑步或跳起时
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); // 存储 Yaw
 		AO_Yaw = 0.f;
 		// 鼠标水平旋转可以改变角色朝向
 		bUseControllerRotationYaw = true;
+		TurnningInPlace = ETurnningInPlace::ETIP_NotTurnning;
 	}
 
 	AO_Pitch = GetBaseAimRotation().Pitch;
@@ -203,6 +207,14 @@ void ABlasterCharacter::AimOffset(float DeltaTime) {
 		FVector2D InRange(270.f, 360.f);
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
+void ABlasterCharacter::TurnInPlace(float DeltaTime) {
+	if (AO_Yaw > 90.f) {
+		TurnningInPlace = ETurnningInPlace::ETIP_Right;
+	} else if (AO_Yaw < -90.f) {
+		TurnningInPlace = ETurnningInPlace::ETIP_Left;
 	}
 }
 

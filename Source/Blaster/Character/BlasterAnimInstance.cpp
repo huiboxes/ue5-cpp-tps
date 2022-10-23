@@ -31,6 +31,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime) {
 	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	bAiming = BlasterCharacter->IsAiming();
+	TurnningInPlcae = BlasterCharacter->GetTurnningInPlace();
 
 	// 基本瞄准旋转是一个全局旋度
 	// 如果直直的看着世界的 X 轴方向，它是 0 
