@@ -33,6 +33,7 @@ protected:
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void AimOffset(float DeltaTime);
+	virtual void Jump() override;
 
 private:
 	// 将它归类为相机
