@@ -189,8 +189,12 @@ void ABlasterCharacter::AimOffset(float DeltaTime) {
 		// 当前和起始瞄准旋转之间的差值
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
+		if (TurnningInPlace == ETurnningInPlace::ETIP_NotTurnning) {
+			InterpAO_Yaw = AO_Yaw;
+		}
+
 		// 鼠标水平旋转不改变角色朝向
-		bUseControllerRotationYaw = false;
+		bUseControllerRotationYaw = true;
 		TurnInPlace(DeltaTime);
 	}
 	if (Speed > 0.f || bIsInAir) { // 跑步或跳起时
@@ -216,6 +220,15 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime) {
 	} else if (AO_Yaw < -90.f) {
 		TurnningInPlace = ETurnningInPlace::ETIP_Left;
 	}
+	if (TurnningInPlace != ETurnningInPlace::ETIP_NotTurnning) { // 处于转向状态时
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
+		AO_Yaw = InterpAO_Yaw; // 设置 AO_Yaw 为插值，用它来驱动根骨骼转向
+		if (FMath::Abs(AO_Yaw) < 15.f) { // 停止转向
+			TurnningInPlace = ETurnningInPlace::ETIP_NotTurnning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); 
+		}
+	}
+
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon) {
